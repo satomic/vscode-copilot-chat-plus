@@ -59,7 +59,6 @@ docker run -itd \
   --network=host \
   --restart=always \
   --name line-changes-recorder \
-  -p 5000:5000 \
   -v $(pwd)/data:/app/datas \
   -v $(pwd)/logs:/app/logs \
   satomic/line-changes-recorder
