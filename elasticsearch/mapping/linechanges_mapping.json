@@ -1,0 +1,54 @@
+{
+    "mappings" : {
+      "properties" : {
+        "id" : {
+          "type" : "keyword"
+        },
+        "sessionId" : {
+          "type" : "keyword"
+        },
+        "responseId" : {
+          "type" : "keyword"
+        },
+        "agentId" : {
+          "type" : "keyword"
+        },
+        "timestamp" : {
+          "type" : "date"
+        },
+        "githubUsername" : {
+          "type" : "keyword"
+        },
+        "gitUrl" : {
+          "type" : "keyword"
+        },
+        "vscodeVersion" : {
+          "type" : "keyword"
+        },
+        "model" : {
+          "type" : "keyword"
+        },
+        "file" : {
+          "type" : "keyword"
+        },
+        "language" : {
+          "type" : "keyword"
+        },
+        "added" : {
+          "type" : "integer"
+        },
+        "removed" : {
+          "type" : "integer"
+        },
+        "version" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+      }
+    }
+}
