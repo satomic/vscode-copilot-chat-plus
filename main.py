@@ -98,6 +98,27 @@ def validate_token(timestamp: str, provided_token: str) -> bool:
     return expected_token == provided_token
 
 class JSONHandler(BaseHTTPRequestHandler):
+    
+    def do_GET(self):
+        # 健康检查端点
+        if self.path == '/' or self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            
+            health_status = {
+                "status": "healthy",
+                "version": "1.0.0",
+                "elasticsearch": "available" if es_available else "unavailable",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            
+            self.wfile.write(json.dumps(health_status).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not Found")
+    
     def do_POST(self):
         # 记录接收到POST请求
         logger.info("Received POST request")

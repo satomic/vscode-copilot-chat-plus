@@ -24,6 +24,9 @@
 vscode-copilot-chat-plus/
 ├── main.py                          # 主服务器文件
 ├── config.py                        # 配置文件
+├── Dockerfile                       # Docker 镜像构建文件
+├── .dockerignore                    # Docker 构建忽略文件
+├── docker-compose.yml               # Docker Compose 配置（示例）
 ├── elasticsearch/
 │   └── mapping/
 │       └── linechanges_mapping.json # Elasticsearch 索引映射
@@ -39,13 +42,61 @@ vscode-copilot-chat-plus/
 
 ## 安装与配置
 
-### 1. 环境要求
+### 方法一：Docker 部署（推荐）
+
+#### 1. 拉取预构建镜像
+
+```bash
+# 拉取最新镜像
+docker pull satomic/line-changes-recorder
+```
+
+#### 2. 运行容器
+
+```bash
+# 基本运行（仅文件存储）
+docker run -itd \
+  --network=host \
+  --restart=always \
+  --name line-changes-recorder \
+  -p 5000:5000 \
+  -v $(pwd)/data:/app/datas \
+  -v $(pwd)/logs:/app/logs \
+  satomic/line-changes-recorder
+```
+
+#### 4. 构建自定义镜像
+
+如果需要修改代码并构建自己的镜像：
+
+```bash
+# 克隆项目
+git clone https://github.com/satomic/vscode-copilot-chat-plus.git
+cd vscode-copilot-chat-plus
+
+# 构建镜像
+docker build -t your-username/line-changes-recorder .
+
+# 运行自定义镜像
+docker run -itd \
+  --network=host \
+  --restart=always \
+  --name line-changes-recorder \
+  -p 5000:5000 \
+  -v $(pwd)/data:/app/datas \
+  -v $(pwd)/logs:/app/logs \
+  your-username/line-changes-recorder
+```
+
+### 方法二：本地 Python 部署
+
+#### 1. 环境要求
 
 - Python 3.7+
 - pip 包管理器
 - Elasticsearch 7.x+ (可选)
 
-### 2. 安装依赖
+#### 2. 安装依赖
 
 ```bash
 # 克隆项目
@@ -61,7 +112,7 @@ source .venv/bin/activate  # Linux/macOS
 pip install elasticsearch
 ```
 
-### 3. 配置 Elasticsearch（可选）
+#### 3. 配置 Elasticsearch（可选）
 
 如果你想使用 Elasticsearch 存储数据，请确保 Elasticsearch 服务正在运行：
 
@@ -75,7 +126,7 @@ docker run -d \
   elasticsearch:8.11.0
 ```
 
-### 4. 环境变量配置
+#### 4. 环境变量配置
 
 可选的环境变量：
 
@@ -109,6 +160,27 @@ python main.py
 ```
 
 ### API 接口
+
+#### GET / 或 GET /health
+
+健康检查端点，用于检查服务状态。
+
+**请求格式:**
+```bash
+curl http://localhost:5000/
+# 或
+curl http://localhost:5000/health
+```
+
+**响应示例:**
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "elasticsearch": "available",
+  "timestamp": "2025-08-15T10:30:00.000Z"
+}
+```
 
 #### POST /
 
@@ -235,13 +307,61 @@ YYYYMMDD_HHMMSS_微秒.json
    - 修改 `config.py` 中的 `SERVER_PORT`
    - 或终止占用端口的进程
 
+### Docker 相关问题
+
+1. **容器无法启动**
+   ```bash
+   # 检查容器日志
+   docker logs line-changes-recorder
+   
+   # 检查容器状态
+   docker ps -a
+   ```
+
+2. **健康检查失败**
+   ```bash
+   # 手动测试健康检查
+   curl http://localhost:5000/health
+   
+   # 进入容器调试
+   docker exec -it line-changes-recorder /bin/bash
+   ```
+
+3. **数据持久化问题**
+   ```bash
+   # 确保挂载目录存在且有写权限
+   mkdir -p ./data ./logs
+   chmod 755 ./data ./logs
+   
+   # 检查挂载是否成功
+   docker inspect line-changes-recorder | grep Mounts -A 20
+   ```
+
+4. **网络连接问题**
+   ```bash
+   # 检查容器网络
+   docker network ls
+   docker network inspect bridge
+   
+   # 测试容器间连接
+   docker exec line-changes-recorder ping elasticsearch
+   ```
+
 ### 调试模式
 
 启用调试模式获取更多日志信息：
 
 ```bash
+# 本地运行
 export DEBUG=true
 python main.py
+
+# Docker 运行
+docker run -d \
+  --name line-changes-recorder \
+  -p 5000:5000 \
+  -e DEBUG=true \
+  satomic/line-changes-recorder:latest
 ```
 
 ## 开发与贡献

@@ -1,0 +1,38 @@
+# Git 相关
+.git
+.gitignore
+
+# Python 相关
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+.env
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE 相关
+.vscode
+.idea
+*.swp
+*.swo
+
+# 操作系统相关
+.DS_Store
+Thumbs.db
+
+# 日志文件
+logs/
+
+# 数据文件
+datas/
+
+# 文档
+*.md
+!README.md
+
+# 其他
+.dockerignore
+Dockerfile*
