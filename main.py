@@ -100,8 +100,12 @@ def validate_token(timestamp: str, provided_token: str) -> bool:
 class JSONHandler(BaseHTTPRequestHandler):
     
     def do_GET(self):
+        # 获取客户端IP地址
+        client_ip = self.client_address[0]
+        
         # 健康检查端点
         if self.path == '/' or self.path == '/health':
+            logger.info(f"Health check request from {client_ip}")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -115,13 +119,17 @@ class JSONHandler(BaseHTTPRequestHandler):
             
             self.wfile.write(json.dumps(health_status).encode())
         else:
+            logger.warning(f"404 Not Found request from {client_ip} for path: {self.path}")
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b"Not Found")
     
     def do_POST(self):
-        # 记录接收到POST请求
-        logger.info("Received POST request")
+        # 获取客户端IP地址
+        client_ip = self.client_address[0]
+        
+        # 记录接收到POST请求，包含源IP
+        logger.info(f"Received POST request from {client_ip}")
         
         try:
             # 读取请求体
@@ -137,14 +145,29 @@ class JSONHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"Invalid JSON format")
                 return
 
-            # 验证token字段（如果存在）
-            if 'token' in data and 'timestamp' in data:
+            # Token 验证逻辑
+            if 'token' not in data:
+                # 没有token字段，要求提供token
+                logger.warning(f"No token provided from {client_ip}")
+                self.send_response(401)
+                self.end_headers()
+                self.wfile.write(b"Token required for authentication")
+                return
+            elif 'timestamp' not in data:
+                # 有token但没有timestamp
+                logger.warning(f"Token provided but no timestamp found from {client_ip}")
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Timestamp required when token is provided")
+                return
+            else:
+                # 有token且有timestamp，进行验证
                 timestamp = data['timestamp']
                 provided_token = data['token']
                 
                 # 使用包含时间窗口的验证
                 if not validate_token_against_current_time(timestamp, provided_token):
-                    logger.warning("Token validation failed")
+                    logger.warning(f"Token validation failed from {client_ip}")
                     logger.warning(f"  Timestamp: {timestamp}")
                     logger.warning(f"  Provided token: {provided_token}")
                     logger.warning(f"  Expected token: {compute_minute_token(timestamp)}")
@@ -154,14 +177,7 @@ class JSONHandler(BaseHTTPRequestHandler):
                     self.wfile.write(b"Invalid token or timestamp too old")
                     return
                 else:
-                    logger.info("Token validation successful")
-            elif 'token' in data:
-                # 如果有token但没有timestamp，也认为是无效的
-                logger.warning("Token provided but no timestamp found")
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b"Token provided but no timestamp found")
-                return
+                    logger.info(f"Token validation successful from {client_ip}")
 
             # 生成文件名
             filename = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + ".json"
@@ -179,18 +195,19 @@ class JSONHandler(BaseHTTPRequestHandler):
                         data['id'] = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                     
                     es_manager.write_to_es(INDEX_NAME_LINECHANGES, data)
-                    logger.info(f"Data written to Elasticsearch index: {INDEX_NAME_LINECHANGES}")
+                    logger.info(f"Data written to Elasticsearch index: {INDEX_NAME_LINECHANGES} from {client_ip}")
                 except Exception as e:
-                    logger.error(f"Failed to write to Elasticsearch: {e}")
+                    logger.error(f"Failed to write to Elasticsearch from {client_ip}: {e}")
                     # 即使写入 ES 失败，也不阻止响应
 
             # 返回成功响应
             self.send_response(200)
             self.end_headers()
             self.wfile.write(f"Saved to {filename}".encode())
+            logger.info(f"Successfully processed request from {client_ip}, saved to {filename}")
 
         except Exception as e:
-            logger.error(f"Server error: {e}")
+            logger.error(f"Server error from {client_ip}: {e}")
             self.send_response(500)
             self.end_headers()
             self.wfile.write(f"Server error: {e}".encode())
