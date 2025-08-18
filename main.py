@@ -105,7 +105,7 @@ class JSONHandler(BaseHTTPRequestHandler):
         
         # 健康检查端点
         if self.path == '/' or self.path == '/health':
-            logger.info(f"Health check request from {client_ip}")
+            # logger.info(f"Health check request from {client_ip}")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -139,7 +139,11 @@ class JSONHandler(BaseHTTPRequestHandler):
             # 解析 JSON
             try:
                 data = json.loads(post_data)
+                # 打印完整的接收到的JSON消息
+                logger.info(f"Received JSON from {client_ip}: {json.dumps(data, ensure_ascii=False, indent=2)}")
             except json.JSONDecodeError:
+                # 即使JSON格式错误，也要打印原始数据
+                logger.error(f"Invalid JSON format from {client_ip}. Raw data: {post_data}")
                 self.send_response(400)
                 self.end_headers()
                 self.wfile.write(b"Invalid JSON format")
