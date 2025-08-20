@@ -1,40 +1,40 @@
 # VSCode Copilot Chat Plus
-对现有 VSCode Copilot Chat 的增强版本，提供了更好的Agent编辑数据收集和处理能力。可以实时的把Agent编辑文件的详情及用户数据通过POST方式发送到自定义的HTTP服务端。
 
+**[中文版](README_CN.md) | English**
+
+An enhanced version of the existing VSCode Copilot Chat that provides better Agent editing data collection and processing capabilities. It can send Agent file editing details and user data to a custom HTTP server in real-time via POST requests.
 
 # Demo
-- link: [Line Changes by VS Code Agent](https://softrin.com/d/cev20h7pfxlvka/line-changes-by-vs-code-agent?orgId=1&from=now-30d&to=now&timezone=browser)
-- username：`demouser`
-- password：`demouser`
+- Link: [Line Changes by VS Code Agent](https://softrin.com/d/cev20h7pfxlvka/line-changes-by-vs-code-agent?orgId=1&from=now-30d&to=now&timezone=browser)
+- Username: `demouser`
+- Password: `demouser`
 
+![demo](files/demo.png)
 
-
-
-# 开发者手动安装增强版插件
-- 下载 [VSCode Copilot Chat Plus 1.31.0-20250820v1](releases/copilot-chat-1.31.0-20250820v1.vsix)。
-- 打开VSCode Insiders，点击左侧的扩展图标。
-- 点击右上角的三个点，选择“从VSIX安装...”。
-- 选择刚刚下载的VSIX文件进行安装。示意图如下：
+# Developer Manual Installation of Enhanced Extension
+- Download [VSCode Copilot Chat Plus 1.31.0-20250820v1](releases/copilot-chat-1.31.0-20250820v1.vsix).
+- Open VSCode Insiders and click the Extensions icon on the left sidebar.
+- Click the three dots in the top right corner and select "Install from VSIX...".
+- Select the VSIX file you just downloaded to install. See the illustration below:
 ![VSCode Copilot Chat Plus Install](files/extension-install.png)
-- 然后开发者使用Agent的所有编辑都会直接写入ES，实时的通过Grafana查看了。
+- After installation, all Agent edits made by developers will be directly written to ES and can be viewed in real-time through Grafana.
 
-# 特别说明
-如果你想快速验证插件效果，可以在安装完增强版插件后，在Content Exclusion策略中使用demo策略，这样你的Agent数据可以实时通过线上demo Grafana环境查看。
+# Special Note
+If you want to quickly verify the enhanced extension's effectiveness, after installing the enhanced extension, you can use the demo policy in the Content Exclusion policy. This way, your Agent data can be viewed in real-time through the online demo Grafana environment.
 ```
 "*":
   - "http://20.89.179.123:5000"
 ```
-如果你想把数据保存到自己的数据库中，请阅读下文，或者自行实现HTTP接受服务监听数据并进行处理。
+If you want to save data to your own database, please read the following sections or implement your own HTTP receiving service to listen to and process the data.
 
-
-# 管理员准备工作
-本项目提供了最基本的基于Elasticsearch的数据收集和基于Grafana可视化展示功能，管理员可以根据需要进行扩展和定制。基本原理如下：
+# Administrator Setup
+This project provides the most basic data collection functionality based on Elasticsearch and visualization display based on Grafana. Administrators can extend and customize as needed. The basic architecture is as follows:
 ![architecture](files/architecture.png)
 
-简要说明：
-- 需要一个HTTP服务端来接收VSCode Copilot Chat Plus发送的POST请求。可以使用任何支持HTTP的编程语言和框架来实现。
-- 接收到的POST请求包含了Agent编辑文件的详情和用户数据，格式为JSON。样本为：
-  ```
+Brief description:
+- An HTTP server is needed to receive POST requests sent by VSCode Copilot Chat Plus. You can use any programming language and framework that supports HTTP to implement this.
+- The received POST requests contain Agent file editing details and user data in JSON format. Sample:
+  ```json
   {
     "version": 1,
     "timestamp": "2025-08-20T01:25:39.556Z",
@@ -52,19 +52,17 @@
     "removed": 1
   }
   ```
-- 收到这样的数据你可以用任何你喜欢的方式保存到数据库中，或者进行其他处理。本文提供的Webhook Receiver以及ES/Grafana等配置仅供参考。
-
+- Upon receiving such data, you can save it to a database in any way you prefer or perform other processing. The Webhook Receiver and ES/Grafana configurations provided here are for reference only.
 
 ## Elasticsearch
-参考[ES安装](https://github.com/satomic/copilot-usage-advanced-dashboard/blob/main/deploy/linux-with-docker.md#installation)部署。
+Refer to [ES Installation](https://github.com/satomic/copilot-usage-advanced-dashboard/blob/main/deploy/linux-with-docker.md#installation) for deployment.
 
 ## Grafana
-参考[Grafana安装](https://github.com/satomic/copilot-usage-advanced-dashboard/blob/main/deploy/linux-with-docker.md#installation-1)部署。
+Refer to [Grafana Installation](https://github.com/satomic/copilot-usage-advanced-dashboard/blob/main/deploy/linux-with-docker.md#installation-1) for deployment.
 
 ## Webhook Receiver
-docker方式安装
+Docker installation:
 ```bash
-# 基本运行（仅文件存储）
 docker run -itd \
   --network=host \
   --restart=always \
@@ -74,14 +72,13 @@ docker run -itd \
   -e ELASTICSEARCH_URL=http://localhost:9200 \
   satomic/line-changes-recorder
 ```
-得到一个服务地址，例如为`http://a.b.c.d:5000`。这个服务会自动初始化ES的indexes。暂时不能自动初始化Grafana，所以需要自己配置一下图形化。
+This will provide a service address, for example `http://a.b.c.d:5000`. This service will automatically initialize ES indexes. Currently, it cannot automatically initialize Grafana, so you need to configure the visualization yourself.
 
-## 配置Content Exclusion Policy
-Copilot管理员去Enterprise/Standalone的Content Exclusion中增加如下策略
+## Configure Content Exclusion Policy
+Copilot administrators should add the following policy in Enterprise/Standalone Content Exclusion:
 ```
 "*":
   - "http://a.b.c.d:5000"
 ```
-参考图片
+Reference image:
 ![Content Exclusion Policy](files/policy.png)
-
