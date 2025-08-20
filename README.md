@@ -2,7 +2,7 @@
 
 **[中文版](README_CN.md) | English**
 
-An enhanced version of the existing VSCode Copilot Chat that provides better Agent editing data collection and processing capabilities. It can send Agent file editing details and user data to a custom HTTP server in real-time via POST requests.
+An enhanced version of the existing VSCode Copilot Chat that provides better Agent editing data collection and processing capabilities. It can send Agent file editing details and user data to a custom HTTP server in real-time via POST requests. Source code is here [satomic/vscode-copilot-chat](https://github.com/satomic/vscode-copilot-chat).
 
 # Demo
 - Link: [Line Changes by VS Code Agent](https://softrin.com/d/cev20h7pfxlvka/line-changes-by-vs-code-agent?orgId=1&from=now-30d&to=now&timezone=browser)

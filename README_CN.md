@@ -2,7 +2,7 @@
 
 **中文版 | [English](README.md)**
 
-对现有 VSCode Copilot Chat 的增强版本，提供了更好的Agent编辑数据收集和处理能力。可以实时的把Agent编辑文件的详情及用户数据通过POST方式发送到自定义的HTTP服务端。
+对现有 VSCode Copilot Chat 的增强版本，提供了更好的Agent编辑数据收集和处理能力。可以实时的把Agent编辑文件的详情及用户数据通过POST方式发送到自定义的HTTP服务端。源码参考[satomic/vscode-copilot-chat](https://github.com/satomic/vscode-copilot-chat)。
 
 
 # Demo
