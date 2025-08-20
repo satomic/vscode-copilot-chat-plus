@@ -8,6 +8,25 @@
 - password：`demouser`
 
 
+
+
+# 开发者手动安装增强版插件
+- 下载 [VSCode Copilot Chat Plus 1.31.0-20250820v1](releases/copilot-chat-1.31.0-20250820v1.vsix)。
+- 打开VSCode Insiders，点击左侧的扩展图标。
+- 点击右上角的三个点，选择“从VSIX安装...”。
+- 选择刚刚下载的VSIX文件进行安装。示意图如下：
+![VSCode Copilot Chat Plus Install](files/extension-install.png)
+- 然后开发者使用Agent的所有编辑都会直接写入ES，实时的通过Grafana查看了。
+
+# 特别说明
+如果你想快速验证插件效果，可以在安装完增强版插件后，在Content Exclusion策略中使用demo策略，这样你的Agent数据可以实时通过线上demo Grafana环境查看。
+```
+"*":
+  - "http://20.89.179.123:5000"
+```
+如果你想把数据保存到自己的数据库中，请阅读下文，或者自行实现HTTP接受服务监听数据并进行处理。
+
+
 # 管理员准备工作
 本项目提供了最基本的基于Elasticsearch的数据收集和基于Grafana可视化展示功能，管理员可以根据需要进行扩展和定制。基本原理如下：
 ![architecture](files/architecture.png)
@@ -66,12 +85,3 @@ Copilot管理员去Enterprise/Standalone的Content Exclusion中增加如下策�
 参考图片
 ![Content Exclusion Policy](files/policy.png)
 
-
-
-# 开发者手动安装增强版插件
-- 下载 [VSCode Copilot Chat Plus 1.31.0-20250820v1](releases/copilot-chat-1.31.0-20250820v1.vsix)。
-- 打开VSCode Insiders，点击左侧的扩展图标。
-- 点击右上角的三个点，选择“从VSIX安装...”。
-- 选择刚刚下载的VSIX文件进行安装。示意图如下：
-![VSCode Copilot Chat Plus Install](files/extension-install.png)
-- 然后开发者使用Agent的所有编辑都会直接写入ES，实时的通过Grafana查看了。
